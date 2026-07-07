@@ -588,12 +588,7 @@
         const reservedTools = [...new Set(items.flatMap(item => item.tools || []))];
 
         if (!reservedTools.length) {
-          return `
-            <tr>
-              <td class="member-name">${escapeHtml(member)}</td>
-              <td><span class="empty">없음</span></td>
-            </tr>
-          `;
+          return '';
         }
 
         return `
@@ -611,7 +606,11 @@
         `;
       }).join('');
 
-      boardBody.innerHTML = rows;
+      boardBody.innerHTML = rows || `
+        <tr>
+          <td colspan="2"><span class="empty">오늘 사용 중인 툴 없음</span></td>
+        </tr>
+      `;
     }
 
     async function loadReservations() {
