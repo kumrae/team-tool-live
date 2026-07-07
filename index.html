@@ -711,7 +711,7 @@ function toggleTool(tool) {
 
   renderTools();
 }
-
+<script>
 async function submitStatus(type) {
   if (!myName) {
     showToast("이름을 선택하세요!");
@@ -722,6 +722,8 @@ async function submitStatus(type) {
   isSubmitting = true;
 
   const btn = document.getElementById(type === '출고' ? "submitBtn" : "returnBtn");
+  const originalText = type === '출고' ? "📤 출고" : "📥 반납";
+
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>처리 중...';
 
@@ -729,34 +731,45 @@ async function submitStatus(type) {
     await fetch(GAS_URL, {
       method: "POST",
       mode: "no-cors",
-      headers: { "Content-Type": "text/plain" },
-      body: JSON.stringify({ name: myName, tools: myTools, type: type })
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        name: myName,
+        tools: myTools,
+        type: type
+      })
     });
 
-    boardData[myName] = [...myTools];
+    await new Promise(resolve => setTimeout(resolve, 500));
+    await loadStatus();
+
     isEditing = false;
+    myTools = [...(boardData[myName] || [])];
     renderTools();
     renderBoard();
+
     showToast(`✅ ${myName} ${type} 완료!`);
   } catch (e) {
-    console.error(e);
+    console.error("submitStatus error:", e);
     showToast("❌ 처리 실패.");
   } finally {
     isSubmitting = false;
     btn.disabled = false;
-    btn.innerHTML = type === '출고' ? "📤 출고" : "📥 반납";
+    btn.innerHTML = originalText;
   }
 }
-
+</script>
+<script>
 async function loadStatus() {
   if (isLoadingStatus || isSubmitting) return;
   isLoadingStatus = true;
 
   try {
-    const res = await fetch(GAS_URL + "?action=get");
-    if (!res.ok) throw new Error("HTTP " + res.status);
+    const res = await fetch(GAS_URL + "?action=get", { method: "GET" });
+    console.log("GET status:", res.status, "type:", res.type);
 
     const data = await res.json();
+    console.log("GET data:", data);
+
     boardData = data || {};
 
     if (myName && !isEditing) {
@@ -766,14 +779,16 @@ async function loadStatus() {
     renderTools();
     renderBoard();
   } catch (e) {
-    console.error(e);
+    console.error("loadStatus error:", e);
     document.getElementById("statusBoard").innerHTML =
       '<div class="loading">⚠️ 데이터를 불러올 수 없습니다.</div>';
   } finally {
     isLoadingStatus = false;
   }
 }
+</script>
 
+  
 function renderBoard() {
   document.getElementById("statusBoard").innerHTML = ALL_MEMBERS.map(m => {
     const tools = boardData[m] || [];
@@ -792,7 +807,7 @@ function renderBoard() {
     `;
   }).join("");
 }
-
+<script>
 async function resetMyStatus() {
   if (!myName) {
     showToast("이름을 먼저 선택하세요!");
@@ -803,28 +818,36 @@ async function resetMyStatus() {
   if (!confirm(`${myName}의 상태를 초기화할까요?`)) return;
 
   isSubmitting = true;
-  myTools = [];
-  isEditing = false;
-  renderTools();
 
   try {
     await fetch(GAS_URL, {
       method: "POST",
       mode: "no-cors",
-      headers: { "Content-Type": "text/plain" },
-      body: JSON.stringify({ name: myName, tools: [], type: "초기화" })
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        name: myName,
+        tools: [],
+        type: "초기화"
+      })
     });
 
-    boardData[myName] = [];
+    await new Promise(resolve => setTimeout(resolve, 500));
+    await loadStatus();
+
+    isEditing = false;
+    myTools = [...(boardData[myName] || [])];
+    renderTools();
     renderBoard();
+
     showToast(`🔄 ${myName} 초기화 완료`);
   } catch (e) {
-    console.error(e);
+    console.error("resetMyStatus error:", e);
     showToast("❌ 초기화 실패.");
   } finally {
     isSubmitting = false;
   }
 }
+</script>
 
 async function loadLog() {
   if (isLoadingLog) return;
