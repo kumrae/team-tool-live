@@ -585,9 +585,7 @@
           rangesOverlap(today, today, item.startDate, item.endDate)
         );
 
-        const reservedTools = [...new Set(items.flatMap(item => item.tools || []))];
-
-        if (!reservedTools.length) {
+        if (!items.length) {
           return '';
         }
 
@@ -595,10 +593,20 @@
           <tr>
             <td class="member-name">${escapeHtml(member)}</td>
             <td>
-              <div class="tool-list">
-                ${reservedTools.map(tool => {
+              <div class="tool-list" style="display:flex;flex-direction:column;gap:8px;">
+                ${items.map(item => {
                   const cls = member === myName ? 'tool-tag mine' : 'tool-tag busy';
-                  return `<span class="${cls}">${escapeHtml(tool)}</span>`;
+                  const tools = [...new Set(item.tools || [])];
+                  return `
+                    <div>
+                      <div style="margin-bottom:4px;">
+                        ${tools.map(tool => `<span class="${cls}">${escapeHtml(tool)}</span>`).join('')}
+                      </div>
+                      <div style="font-size:12px;color:#777;">
+                        ${escapeHtml(item.startDate || '-') } ~ ${escapeHtml(item.endDate || '-')}
+                      </div>
+                    </div>
+                  `;
                 }).join('')}
               </div>
             </td>
@@ -612,7 +620,6 @@
         </tr>
       `;
     }
-
     async function loadReservations() {
       try {
         const data = await jsonpRequest(`${GAS_URL}?action=getReservations&_ts=${Date.now()}`);
