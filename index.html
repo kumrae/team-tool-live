@@ -39,20 +39,9 @@
       padding: 20px;
     }
 
-    .header {
-      margin-bottom: 16px;
-    }
-
-    .title {
-      font-size: 28px;
-      font-weight: 700;
-      margin: 0 0 8px;
-    }
-
-    .desc {
-      color: var(--muted);
-      margin: 0;
-    }
+    .header { margin-bottom: 16px; }
+    .title { font-size: 28px; font-weight: 700; margin: 0 0 8px; }
+    .desc { color: var(--muted); margin: 0; }
 
     .grid {
       display: grid;
@@ -68,26 +57,10 @@
       box-shadow: var(--shadow);
     }
 
-    .panel-inner {
-      padding: 18px;
-    }
-
-    .section-title {
-      font-size: 18px;
-      font-weight: 700;
-      margin: 0 0 14px;
-    }
-
-    .field {
-      margin-bottom: 14px;
-    }
-
-    .label {
-      display: block;
-      font-size: 14px;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
+    .panel-inner { padding: 18px; }
+    .section-title { font-size: 18px; font-weight: 700; margin: 0 0 14px; }
+    .field { margin-bottom: 14px; }
+    .label { display: block; font-size: 14px; font-weight: 700; margin-bottom: 8px; }
 
     select, input[type="date"] {
       width: 100%;
@@ -194,30 +167,12 @@
       cursor: pointer;
     }
 
-    .btn-primary {
-      background: var(--primary);
-      color: white;
-    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-secondary { background: #eef2f7; color: #374151; }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    .btn-secondary {
-      background: #eef2f7;
-      color: #374151;
-    }
-
-    .btn-danger {
-      background: var(--danger);
-      color: white;
-    }
-
-    .btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .board-wrap {
-      display: grid;
-      gap: 20px;
-    }
+    .board-wrap { display: grid; gap: 20px; }
 
     .legend {
       display: flex;
@@ -249,9 +204,7 @@
     .dot-busy { background: #9ca3af; }
     .dot-free { background: #e5e7eb; }
 
-    .board {
-      overflow-x: auto;
-    }
+    .board { overflow-x: auto; }
 
     table {
       width: 100%;
@@ -304,9 +257,7 @@
       color: #6b7280;
     }
 
-    .empty {
-      color: #9ca3af;
-    }
+    .empty { color: #9ca3af; }
 
     .log-list {
       display: grid;
@@ -329,20 +280,9 @@
       margin-bottom: 8px;
     }
 
-    .log-name {
-      font-weight: 700;
-    }
-
-    .log-time {
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .log-meta {
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.5;
-    }
+    .log-name { font-weight: 700; }
+    .log-time { font-size: 12px; color: var(--muted); }
+    .log-meta { font-size: 13px; color: var(--muted); line-height: 1.5; }
 
     .toast {
       position: fixed;
@@ -366,23 +306,13 @@
     }
 
     @media (max-width: 980px) {
-      .grid {
-        grid-template-columns: 1fr;
-      }
+      .grid { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 640px) {
-      .wrap {
-        padding: 14px;
-      }
-
-      .tools-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-
-      .actions {
-        flex-direction: column;
-      }
+      .wrap { padding: 14px; }
+      .tools-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .actions { flex-direction: column; }
     }
   </style>
 </head>
@@ -472,11 +402,13 @@
 
   <script>
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbwN1hhHSNrsipPXGMufLAzZB0uIL1ADpIABnQ4GttmxTuqreRB590_D-c1mSXGKfAcc-w/exec';
+
     const MEMBERS = [
       '정철환', '정수철', '최금래', '오현석', '정태석', '엄병준', '이진한', '박진만', '김성진', '이준명',
       '홍승한', '조원주', '이윤모', '김윤성', '이태일', '서인석', '이재룡', '전대수', '장원석', '장승혁',
       '박수환', '최상원', '🔧 수리/교정중', '⚠️ 점검필요'
     ];
+
     const TOOLS = ['S1','S2','S3','S4','SV1','SV2','SV3','SV4','96MPH','N1구형','N2','N3','N4','N5','NV1','NV2','NV3','D1','D2','D3','D4','D5','D6','J1','J2','J3'];
 
     const nameSelect = document.getElementById('nameSelect');
@@ -510,9 +442,7 @@
       toast.textContent = message;
       toast.classList.add('show');
       clearTimeout(showToast._timer);
-      showToast._timer = setTimeout(() => {
-        toast.classList.remove('show');
-      }, 2200);
+      showToast._timer = setTimeout(() => toast.classList.remove('show'), 2200);
     }
 
     function escapeHtml(text) {
@@ -667,17 +597,6 @@
 
     function normalizeReservations(data) {
       if (Array.isArray(data?.reservations)) return data.reservations;
-      if (Array.isArray(data?.logs)) {
-        return data.logs.map(row => ({
-          timestamp: row[0] || '',
-          name: row[1] || '',
-          tools: String(row[2] || '').split(',').map(v => v.trim()).filter(Boolean),
-          type: row[3] || '예약',
-          startDate: row[4] || '',
-          endDate: row[5] || '',
-          status: '예약'
-        }));
-      }
       return [];
     }
 
@@ -743,6 +662,27 @@
       `).join('');
     }
 
+    async function postAction(payload) {
+      await fetch(GAS_URL, {
+        method: 'POST',
+        redirect: 'follow',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8'
+        },
+        body: JSON.stringify(payload)
+      });
+    }
+
+    async function refreshAll(delay = 700) {
+      await new Promise(resolve => setTimeout(resolve, delay));
+      await loadReservations();
+      await loadLog();
+      syncSelectedMyReservations();
+      renderTools();
+      renderBoard();
+      renderSelectionSummary();
+    }
+
     async function saveReservation() {
       if (!myName) return showToast('이름을 선택하세요.');
       if (!isRangeValid()) return showToast('예약 기간을 올바르게 입력하세요.');
@@ -759,55 +699,21 @@
 
       try {
         reserveBtn.disabled = true;
+        await postAction(payload);
+        await refreshAll(900);
 
-        const res = await fetch(GAS_URL, {
-          method: 'POST',
-          redirect: 'follow',
-          headers: {
-            'Content-Type': 'text/plain;charset=utf-8'
-          },
-          body: JSON.stringify(payload)
-        });
-
-        const text = await res.text();
-        const result = JSON.parse(text);
-
-        if (result.status !== 'ok') {
-          if (result.status === 'conflict' && Array.isArray(result.conflicts)) {
-            const msg = result.conflicts
-              .map(item => `${item.name}: ${item.tools.join(', ')} (${item.startDate}~${item.endDate})`)
-              .join(' / ');
-            showToast(msg || result.message || '이미 예약된 툴과 기간이 겹칩니다.');
-          } else {
-            showToast(result.message || '예약 저장에 실패했습니다.');
-          }
-          return;
-        }
-
-        reservations = reservations.filter(item =>
-          !(item.name === myName && item.startDate === startDateEl.value && item.endDate === endDateEl.value)
+        const exists = reservations.some(item =>
+          item.name === myName &&
+          item.startDate === startDateEl.value &&
+          item.endDate === endDateEl.value &&
+          myTools.every(tool => (item.tools || []).includes(tool))
         );
 
-        reservations.push({
-          timestamp: result.reservation?.timestamp || new Date().toISOString(),
-          name: myName,
-          tools: [...myTools],
-          startDate: startDateEl.value,
-          endDate: endDateEl.value,
-          type: '예약',
-          status: '예약'
-        });
-
-        renderTools();
-        renderBoard();
-        renderSelectionSummary();
-        loadLog();
-
-        setTimeout(() => loadReservations(), 400);
-        showToast('예약을 저장했습니다.');
+        if (exists) showToast('예약을 저장했습니다.');
+        else showToast('저장 요청 후 다시 확인해주세요.');
       } catch (error) {
         console.error(error);
-        showToast(error.message || '예약 저장에 실패했습니다.');
+        showToast('예약 저장에 실패했습니다.');
       } finally {
         reserveBtn.disabled = false;
       }
@@ -820,43 +726,20 @@
       try {
         cancelRangeBtn.disabled = true;
 
-        const res = await fetch(GAS_URL, {
-          method: 'POST',
-          redirect: 'follow',
-          headers: {
-            'Content-Type': 'text/plain;charset=utf-8'
-          },
-          body: JSON.stringify({
-            action: 'cancelByRange',
-            name: myName,
-            startDate: startDateEl.value,
-            endDate: endDateEl.value,
-            type: '예약구간취소'
-          })
+        await postAction({
+          action: 'cancelByRange',
+          name: myName,
+          startDate: startDateEl.value,
+          endDate: endDateEl.value,
+          type: '예약구간취소'
         });
 
-        const result = await res.json();
-
-        if (result.status !== 'ok') {
-          showToast(result.message || '기간 취소에 실패했습니다.');
-          return;
-        }
-
-        reservations = reservations.filter(item =>
-          !(item.name === myName && item.startDate === startDateEl.value && item.endDate === endDateEl.value)
-        );
-
         myTools = [];
-        renderTools();
-        renderBoard();
-        renderSelectionSummary();
-        loadLog();
-
-        setTimeout(() => loadReservations(), 400);
-        showToast(`해당 기간 예약 ${result.removedCount || 0}건을 취소했습니다.`);
+        await refreshAll(900);
+        showToast('해당 기간 예약을 취소했습니다.');
       } catch (error) {
         console.error(error);
-        showToast(error.message || '기간 취소에 실패했습니다.');
+        showToast('기간 취소에 실패했습니다.');
       } finally {
         cancelRangeBtn.disabled = false;
       }
@@ -869,38 +752,18 @@
       try {
         cancelAllBtn.disabled = true;
 
-        const res = await fetch(GAS_URL, {
-          method: 'POST',
-          redirect: 'follow',
-          headers: {
-            'Content-Type': 'text/plain;charset=utf-8'
-          },
-          body: JSON.stringify({
-            action: 'cancelByName',
-            name: myName,
-            type: '예약전체취소'
-          })
+        await postAction({
+          action: 'cancelByName',
+          name: myName,
+          type: '예약전체취소'
         });
 
-        const result = await res.json();
-
-        if (result.status !== 'ok') {
-          showToast(result.message || '전체 취소에 실패했습니다.');
-          return;
-        }
-
-        reservations = reservations.filter(item => item.name !== myName);
         myTools = [];
-        renderTools();
-        renderBoard();
-        renderSelectionSummary();
-        loadLog();
-
-        setTimeout(() => loadReservations(), 400);
-        showToast(`전체 예약 ${result.removedCount || 0}건을 취소했습니다.`);
+        await refreshAll(900);
+        showToast('전체 예약을 취소했습니다.');
       } catch (error) {
         console.error(error);
-        showToast(error.message || '전체 취소에 실패했습니다.');
+        showToast('전체 취소에 실패했습니다.');
       } finally {
         cancelAllBtn.disabled = false;
       }
