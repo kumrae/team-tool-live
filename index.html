@@ -12,12 +12,7 @@
       --text: #1f2937;
       --muted: #6b7280;
       --primary: #2563eb;
-      --primary-soft: #dbeafe;
       --danger: #dc2626;
-      --danger-soft: #fee2e2;
-      --success: #16a34a;
-      --success-soft: #dcfce7;
-      --disabled: #e5e7eb;
       --disabled-text: #9ca3af;
       --mine: #eff6ff;
       --busy: #f3f4f6;
@@ -26,6 +21,7 @@
     }
 
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
@@ -51,7 +47,7 @@
     }
 
     .panel {
-      background: var(--panel);
+      background: #fff;
       border: 1px solid var(--line);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
@@ -112,13 +108,6 @@
       color: var(--disabled-text);
       border-color: #d1d5db;
       cursor: not-allowed;
-    }
-
-    .tool-btn.busy.selected {
-      background: var(--primary);
-      color: #fff;
-      border-color: var(--primary);
-      cursor: pointer;
     }
 
     .summary {
@@ -442,7 +431,9 @@
       toast.textContent = message;
       toast.classList.add('show');
       clearTimeout(showToast._timer);
-      showToast._timer = setTimeout(() => toast.classList.remove('show'), 2200);
+      showToast._timer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2200);
     }
 
     function escapeHtml(text) {
@@ -485,7 +476,11 @@
     }
 
     function syncSelectedMyReservations() {
-      if (!myName || !isRangeValid()) return;
+      if (!myName || !isRangeValid()) {
+        myTools = [];
+        return;
+      }
+
       const start = startDateEl.value;
       const end = endDateEl.value;
 
@@ -528,12 +523,7 @@
         else if (busy) cls += ' busy';
 
         return `
-          <button
-            type="button"
-            class="${cls}"
-            data-tool="${escapeHtml(tool)}"
-            ${busy ? 'disabled' : ''}
-          >
+          <button type="button" class="${cls}" data-tool="${escapeHtml(tool)}" ${busy ? 'disabled' : ''}>
             ${escapeHtml(tool)}
           </button>
         `;
@@ -544,11 +534,8 @@
           const tool = btn.dataset.tool;
           if (!tool) return;
 
-          if (myTools.includes(tool)) {
-            myTools = myTools.filter(v => v !== tool);
-          } else {
-            myTools = [...myTools, tool];
-          }
+          if (myTools.includes(tool)) myTools = myTools.filter(v => v !== tool);
+          else myTools = [...myTools, tool];
 
           renderTools();
           renderSelectionSummary();
@@ -595,20 +582,16 @@
       boardBody.innerHTML = rows;
     }
 
-    function normalizeReservations(data) {
-      if (Array.isArray(data?.reservations)) return data.reservations;
-      return [];
-    }
-
     async function loadReservations() {
       try {
         const res = await fetch(`${GAS_URL}?action=getReservations&_ts=${Date.now()}`, {
           cache: 'no-store',
           redirect: 'follow'
         });
+
         const data = await res.json();
 
-        reservations = normalizeReservations(data).map(item => ({
+        reservations = (Array.isArray(data?.reservations) ? data.reservations : []).map(item => ({
           timestamp: item.timestamp || '',
           name: item.name || '',
           tools: Array.isArray(item.tools)
@@ -637,6 +620,7 @@
           cache: 'no-store',
           redirect: 'follow'
         });
+
         const data = await res.json();
         logs = Array.isArray(data.logs) ? data.logs : [];
       } catch (error) {
@@ -662,18 +646,51 @@
       `).join('');
     }
 
-    async function postAction(payload) {
-      await fetch(GAS_URL, {
-        method: 'POST',
-        redirect: 'follow',
-        headers: {
-          'Content-Type': 'text/plain;charset=utf-8'
-        },
-        body: JSON.stringify(payload)
+    function submitToGasByForm(payload) {
+      return new Promise((resolve) => {
+        const iframeName = 'gas_hidden_iframe_' + Date.now();
+
+        const iframe = document.createElement('iframe');
+        iframe.name = iframeName;
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = GAS_URL;
+        form.target = iframeName;
+        form.style.display = 'none';
+
+        Object.entries(payload).forEach(([key, value]) => {
+          if (Array.isArray(value)) {
+            value.forEach(v => {
+              const input = document.createElement('input');
+              input.type = 'hidden';
+              input.name = key;
+              input.value = v;
+              form.appendChild(input);
+            });
+          } else {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = value ?? '';
+            form.appendChild(input);
+          }
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+
+        setTimeout(() => {
+          form.remove();
+          iframe.remove();
+          resolve();
+        }, 1000);
       });
     }
 
-    async function refreshAll(delay = 700) {
+    async function refreshAll(delay = 1200) {
       await new Promise(resolve => setTimeout(resolve, delay));
       await loadReservations();
       await loadLog();
@@ -688,29 +705,20 @@
       if (!isRangeValid()) return showToast('예약 기간을 올바르게 입력하세요.');
       if (!myTools.length) return showToast('예약할 툴을 선택하세요.');
 
-      const payload = {
-        action: 'reserve',
-        name: myName,
-        tools: myTools,
-        startDate: startDateEl.value,
-        endDate: endDateEl.value,
-        type: '예약'
-      };
-
       try {
         reserveBtn.disabled = true;
-        await postAction(payload);
-        await refreshAll(900);
 
-        const exists = reservations.some(item =>
-          item.name === myName &&
-          item.startDate === startDateEl.value &&
-          item.endDate === endDateEl.value &&
-          myTools.every(tool => (item.tools || []).includes(tool))
-        );
+        await submitToGasByForm({
+          action: 'reserve',
+          name: myName,
+          tools: myTools,
+          startDate: startDateEl.value,
+          endDate: endDateEl.value,
+          type: '예약'
+        });
 
-        if (exists) showToast('예약을 저장했습니다.');
-        else showToast('저장 요청 후 다시 확인해주세요.');
+        await refreshAll();
+        showToast('예약 저장 요청을 보냈습니다.');
       } catch (error) {
         console.error(error);
         showToast('예약 저장에 실패했습니다.');
@@ -726,7 +734,7 @@
       try {
         cancelRangeBtn.disabled = true;
 
-        await postAction({
+        await submitToGasByForm({
           action: 'cancelByRange',
           name: myName,
           startDate: startDateEl.value,
@@ -734,9 +742,8 @@
           type: '예약구간취소'
         });
 
-        myTools = [];
-        await refreshAll(900);
-        showToast('해당 기간 예약을 취소했습니다.');
+        await refreshAll();
+        showToast('해당 기간 예약 취소 요청을 보냈습니다.');
       } catch (error) {
         console.error(error);
         showToast('기간 취소에 실패했습니다.');
@@ -752,15 +759,14 @@
       try {
         cancelAllBtn.disabled = true;
 
-        await postAction({
+        await submitToGasByForm({
           action: 'cancelByName',
           name: myName,
           type: '예약전체취소'
         });
 
-        myTools = [];
-        await refreshAll(900);
-        showToast('전체 예약을 취소했습니다.');
+        await refreshAll();
+        showToast('전체 예약 취소 요청을 보냈습니다.');
       } catch (error) {
         console.error(error);
         showToast('전체 취소에 실패했습니다.');
