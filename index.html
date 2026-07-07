@@ -502,7 +502,6 @@ body {
 </div>
 
 <div class="toast" id="toast"></div>
-
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbwMldQp5b42w8JBRTH8jHRE7NjGkAFFM3iOMD1iujt4ABnZelhn8G0XcgYoRHk2eDra/exec";
   
@@ -711,7 +710,7 @@ function toggleTool(tool) {
 
   renderTools();
 }
-<script>
+
 async function submitStatus(type) {
   if (!myName) {
     showToast("이름을 선택하세요!");
@@ -757,8 +756,8 @@ async function submitStatus(type) {
     btn.innerHTML = originalText;
   }
 }
-</script>
-<script>
+
+
 async function loadStatus() {
   if (isLoadingStatus || isSubmitting) return;
   isLoadingStatus = true;
@@ -786,7 +785,7 @@ async function loadStatus() {
     isLoadingStatus = false;
   }
 }
-</script>
+
 
   
 function renderBoard() {
@@ -807,7 +806,7 @@ function renderBoard() {
     `;
   }).join("");
 }
-<script>
+
 async function resetMyStatus() {
   if (!myName) {
     showToast("이름을 먼저 선택하세요!");
@@ -847,7 +846,7 @@ async function resetMyStatus() {
     isSubmitting = false;
   }
 }
-</script>
+
 
 async function loadLog() {
   if (isLoadingLog) return;
@@ -991,3 +990,8 @@ updateTime();
 </script>
 </body>
 </html>
+
+
+
+
+  
