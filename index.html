@@ -358,6 +358,11 @@
         <section class="panel">
           <div class="panel-inner">
             <h2 class="section-title">오늘 사용 현황</h2>
+            
+            <div style="margin-bottom:12px;">
+              <input type="date" id="viewDate" onchange="renderBoard()" />
+            </div>
+            
             <div class="legend">
               <span class="legend-item"><span class="dot dot-mine"></span>내 예약</span>
               <span class="legend-item"><span class="dot dot-busy"></span>다른 사람 예약</span>
@@ -576,13 +581,13 @@
     }
 
     function renderBoard() {
-      const today = todayStr();
+      const viewDate = document.getElementById('viewDate')?.value || todayStr();
 
       const rows = MEMBERS.map(member => {
         const items = reservations.filter(item =>
           item.name === member &&
           (item.status || '예약') !== '취소' &&
-          rangesOverlap(today, today, item.startDate, item.endDate)
+          rangesOverlap(viewDate, viewDate, item.startDate, item.endDate)
         );
 
         if (!items.length) {
@@ -603,7 +608,7 @@
                         ${tools.map(tool => `<span class="${cls}">${escapeHtml(tool)}</span>`).join('')}
                       </div>
                       <div style="font-size:12px;color:#777;">
-                        ${escapeHtml(item.startDate || '-') } ~ ${escapeHtml(item.endDate || '-')}
+                        ${escapeHtml(item.startDate || '-')} ~ ${escapeHtml(item.endDate || '-')}
                       </div>
                     </div>
                   `;
@@ -616,7 +621,7 @@
 
       boardBody.innerHTML = rows || `
         <tr>
-          <td colspan="2"><span class="empty">오늘 사용 중인 툴 없음</span></td>
+          <td colspan="2"><span class="empty">${escapeHtml(viewDate)} 예약 없음</span></td>
         </tr>
       `;
     }
@@ -850,11 +855,13 @@
       const today = todayStr();
       startDateEl.value = today;
       endDateEl.value = today;
+      document.getElementById('viewDate').value = todayStr();
 
       renderSelectionSummary();
       renderTools();
       await loadReservations();
       await loadLog();
+      renderBoard();
     }
 
     init();
