@@ -763,10 +763,15 @@ async function loadStatus() {
   isLoadingStatus = true;
 
   try {
-    const res = await fetch(GAS_URL + "?action=get", { method: "GET" });
-    console.log("GET status:", res.status, "type:", res.type);
+    const res = await fetch(GAS_URL + "?action=get", {
+      method: "GET",
+      redirect: "follow"
+    });
 
-    const data = await res.json();
+    const text = await res.text();
+    console.log("GET raw text:", text);
+
+    const data = JSON.parse(text);
     console.log("GET data:", data);
 
     boardData = data || {};
@@ -785,7 +790,6 @@ async function loadStatus() {
     isLoadingStatus = false;
   }
 }
-
 
   
 function renderBoard() {
