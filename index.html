@@ -1006,11 +1006,30 @@ async function saveReservation() {
       return;
     }
 
-    await loadReservations();
+    reservations = reservations.filter(item =>
+      !(item.name === myName && item.startDate === startDateEl.value && item.endDate === endDateEl.value)
+    );
+
+    reservations.push({
+      timestamp: result.reservation?.timestamp || new Date().toISOString(),
+      name: myName,
+      tools: [...myTools],
+      startDate: startDateEl.value,
+      endDate: endDateEl.value,
+      type: '예약',
+      status: '예약'
+    });
+
+    renderTools();
+    renderBoard();
+    loadLog();
+    renderSelectionSummary();
+
+    setTimeout(() => loadReservations(), 400);
     showToast('예약을 저장했습니다.');
   } catch (error) {
     console.error(error);
-    showToast('예약 저장에 실패했습니다.');
+    showToast(error.message || '예약 저장에 실패했습니다.');
   } finally {
     reserveBtn.disabled = false;
   }
