@@ -655,6 +655,7 @@
     async function loadLog() {
       try {
         const data = await jsonpRequest(`${GAS_URL}?action=log&_ts=${Date.now()}`);
+        console.log('log data:', data);
         logs = Array.isArray(data.logs) ? data.logs : [];
         renderLog();
       } catch (error) {
