@@ -656,11 +656,15 @@
       try {
         const data = await jsonpRequest(`${GAS_URL}?action=log&_ts=${Date.now()}`);
         logs = Array.isArray(data.logs) ? data.logs : [];
+        renderLog();
       } catch (error) {
         console.error('loadLog error:', error);
         logs = [];
+        renderLog();
       }
+    }
 
+    function renderLog() {
       if (!logs.length) {
         logList.innerHTML = '<div class="empty">로그가 없습니다.</div>';
         return;
